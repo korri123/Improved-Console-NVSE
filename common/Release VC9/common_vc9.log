@@ -1,0 +1,7 @@
+﻿  IDynamicCreate.cpp
+  IPipeClient.cpp
+  IPipeServer.cpp
+  IDirectoryIterator.cpp
+  IPrefix.cpp
+  Generating Code...
+  common_vc9.vcxproj -> C:\Users\KormakurBreki\Documents\nvse plugin\blank_proj -combined - Copy - Copy\common\Release VC9\common_vc9.lib

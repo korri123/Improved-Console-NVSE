@@ -1,0 +1,4 @@
+LIBRARY	"gary_plugin"
+EXPORTS
+NVSEPlugin_Query
+NVSEPlugin_Load

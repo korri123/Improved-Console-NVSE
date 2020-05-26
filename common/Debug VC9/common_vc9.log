@@ -1,0 +1,36 @@
+﻿  IPrefix.cpp
+  IDirectoryIterator.cpp
+  IPipeServer.cpp
+  IPipeClient.cpp
+  IObjectPool.cpp
+  IMemPool.cpp
+  ITimer.cpp
+  IDynamicCreate.cpp
+  IConsole.cpp
+  ITypes.cpp
+  ITextParser.cpp
+  IRangeMap.cpp
+  IFIFO.cpp
+  IDatabase.cpp
+  IArchive.cpp
+  IThread.cpp
+  IReadWriteLock.cpp
+  IMutex.cpp
+  IInterlockedLong.cpp
+  IEvent.cpp
+  Generating Code...
+  Compiling...
+  IErrors.cpp
+  IDebugLog.cpp
+  ISegmentStream.cpp
+  IFileStream.cpp
+  IDataStream.cpp
+  IBufferStream.cpp
+  Generating Code...
+IObjectPool.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+IDynamicCreate.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+IRangeMap.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+IDatabase.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+IArchive.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+IInterlockedLong.obj : warning LNK4221: This object file does not define any previously undefined public symbols, so it will not be used by any link operation that consumes this library
+  common_vc9.vcxproj -> C:\Users\KormakurBreki\Documents\nvse plugin\blank_proj -combined - Copy - Copy\common\Debug VC9\common_vc9.lib
