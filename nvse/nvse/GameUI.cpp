@@ -56,7 +56,7 @@ Menu * InterfaceManager::TempMenuByType(UInt32 menuType)
 // Path is of format "MenuType/tile/tile/..." following hierarchy defined in menu's xml.
 // Returns pointer to top-level menu or NULL.
 // pSlashPos is set to the slash character after the top-level menu name.
-/*
+
 TileMenu* InterfaceManager::GetMenuByPath(const char * componentPath, const char ** pSlashPos)
 {
 	// get menu name - stored by game as "&MENUNAME;" so need to fix it up
@@ -105,7 +105,7 @@ Tile* InterfaceManager::GetMenuComponentTile(const char * componentPath)
 	}
 	return NULL;
 }
-*/
+
 void Debug_DumpMenus(void)
 {
 	for(UInt32 i = 0; i < g_TileMenuArray->Length(); i++)

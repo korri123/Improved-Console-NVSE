@@ -2745,7 +2745,7 @@ ScriptToken* ExpressionParser::ParseOperand(Operator* curOp)
 		default: break;
 		}
 	}
-	catch (std::invalid_argument& e)
+	catch (std::invalid_argument&)
 	{
 	}
 

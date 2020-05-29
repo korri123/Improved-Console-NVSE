@@ -1,4 +1,6 @@
 #include "main.h"
+
+#include "autocomplete.h"
 #include "init_patches.h"
 #include "command_printer.h"
 #include "console_scroll.h"
@@ -32,6 +34,10 @@ void MessageHandler(NVSEMessagingInterface::Message* msg)
 		{
 			PrintLog("jip is nullptr");
 		}
+	}
+	else if (msg->type == NVSEMessagingInterface::kMessage_PostLoadGame)
+	{
+		Autocomplete::Initialize();
 	}
 }
 
@@ -101,6 +107,7 @@ bool NVSEPlugin_Load(const NVSEInterface *nvse)
 	PatchPrintAnything();
 	PatchConsoleVariables();
 	PatchIsAlpha();
+
 
 	//PrepareForHell();
 	//REG_CMD(Assign);

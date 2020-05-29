@@ -28,9 +28,9 @@ public:
 	static bool					IsMenuVisible(UInt32 menuType);
 	static Menu *				GetMenuByType(UInt32 menuType);
 	static Menu *				TempMenuByType(UInt32 menuType);
-	//static TileMenu *			GetMenuByPath(const char * componentPath, const char ** slashPos);
-	//static Tile::Value *		GetMenuComponentValue(const char * componentPath);
-	//static Tile *				GetMenuComponentTile(const char * componentPath);
+	static TileMenu *			GetMenuByPath(const char * componentPath, const char ** slashPos);
+	static Tile::Value *		GetMenuComponentValue(const char * componentPath);
+	static Tile *				GetMenuComponentTile(const char * componentPath);
 
 	UInt32 GetTopVisibleMenuID();
 	Tile *GetActiveTile();

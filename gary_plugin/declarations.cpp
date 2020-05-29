@@ -1,4 +1,6 @@
 #include "declarations.h"
+
+#include "GameTiles.h"
 #include "internal/dinput.h"
 
 namespace ImprovedConsole
@@ -48,4 +50,30 @@ namespace ImprovedConsole
 		auto* consoleManager = ConsoleManager::GetSingleton();
 		return static_cast<bool>(ThisStdCall_B(0x4A4020, static_cast<void*>(consoleManager)));
 	}
+}
+
+enum
+{
+	kAddr_TileGetFloat = 0xA011B0,
+	kAddr_TileGetString = 0xA011F0,
+	kAddr_TileSetFloat = 0xA012D0,
+	kAddr_TileSetString = 0xA01350,
+};
+
+__declspec(naked) float Tile::GetValueFloat(UInt32 id)
+{
+	static const UInt32 procAddr = kAddr_TileGetFloat;
+	__asm	jmp		procAddr
+}
+
+__declspec(naked) void Tile::SetFloat(UInt32 id, float fltVal, bool bPropagate)
+{
+	static const UInt32 procAddr = kAddr_TileSetFloat;
+	__asm	jmp		procAddr
+}
+
+__declspec(naked) void Tile::SetString(UInt32 id, const char* strVal, bool bPropagate)
+{
+	static const UInt32 procAddr = kAddr_TileSetString;
+	__asm	jmp		procAddr
 }

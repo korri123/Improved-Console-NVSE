@@ -6,7 +6,6 @@
 #include "console_arrays.h"
 #include "console_variables.h"
 #include "SafeWrite.h"
-#include "structs.h"
 
 using namespace ImprovedConsole;
 
@@ -67,7 +66,7 @@ std::string FormatElement(NVSEArrayVarInterface::Element* element) {
 
 }
 
-void PrintArray(ImprovedConsole::NVSEArrayVar* arrayPtr)
+void PrintArray(NVSEArrayVar* arrayPtr)
 {
 	if (arrayPtr == nullptr) {
 		Console_Print("Could not get array");
@@ -179,7 +178,7 @@ void PrintVar(double value, CommandReturnType type)
 	}
 }
 
-void PrintElement(ImprovedConsole::NVSEArrayElement& element)
+void PrintElement(NVSEArrayElement& element)
 {
 	switch (static_cast<ConsoleArrays::ElementType>(element.GetType())) {
 	case ConsoleArrays::kDataType_Numeric:

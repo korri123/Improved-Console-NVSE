@@ -10,9 +10,6 @@ using namespace ImprovedConsole;
 
 namespace ConsoleArrays
 {
-	
-	//std::vector<ConsoleArray> g_consoleArrays;
-
 	std::map<std::string, std::shared_ptr<ConsoleArray>> g_consoleArraysMap;
 
 	CommandReturnType GetType(const ElementType type)
@@ -30,7 +27,7 @@ namespace ConsoleArrays
 
 	ConsoleArray& GetByName(std::string name)
 	{
-		auto varEntry = g_consoleArraysMap.find(name);
+		const auto varEntry = g_consoleArraysMap.find(name);
 		if (varEntry == g_consoleArraysMap.end())
 		{
 			throw std::invalid_argument("couldn't find console array");
@@ -41,7 +38,7 @@ namespace ConsoleArrays
 
 	void StoreArray(std::string& variableName, const UInt32 arrayId)
 	{
-		auto* arrayPtr = LookupArrayByID(arrayId);
+		auto* const arrayPtr = LookupArrayByID(arrayId);
 
 		if (arrayPtr == nullptr)
 		{
@@ -80,7 +77,7 @@ namespace ConsoleArrays
 		}
 	}
 
-	ImprovedConsole::NVSEArrayElement GetElementAtIndex(std::string& varName, std::string& index)
+	NVSEArrayElement GetElementAtIndex(std::string& varName, std::string& index)
 	{
 		ConsoleArray consoleArray;
 		try
@@ -131,7 +128,6 @@ namespace ConsoleArrays
 
 		double result = 0;
 		AssignCommandResult(arrayPtr, &result);
-		PrintLog("assigncommandresult: %.2f", result);
 		return result;
 	}
 
@@ -147,7 +143,6 @@ namespace ConsoleArrays
 
 		double result = 0;
 		AssignCommandResult(arrayPtr, &result);
-		PrintLog("assigncommandresult: %.2f", result);
 		return result;
 	}
 
@@ -163,7 +158,6 @@ namespace ConsoleArrays
 
 		double result = 0;
 		AssignCommandResult(arrayPtr, &result);
-		PrintLog("assigncommandresult: %.2f", result);
 		return result;
 	}
 

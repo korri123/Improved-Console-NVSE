@@ -25,5 +25,6 @@ Script::ScriptVarType GetVarType(const ConsoleVariable& variable);
 void __stdcall SetEventListVariables(ScriptEventList *eventList);
 void __stdcall InjectScriptVariables(Script* scriptObj);
 
+void InjectScriptBufVariables(ScriptBuffer* scriptBuffer);
 void PatchConsoleVariables();
 void PatchInjectVariables();

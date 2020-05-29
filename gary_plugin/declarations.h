@@ -8,9 +8,6 @@ namespace ImprovedConsole
 {
 	extern DebugLog s_log, s_debug;
 
-	typedef NVSEArrayVarInterface::Array NVSEArrayVar;
-	typedef NVSEArrayVarInterface::Element NVSEArrayElement;
-
 	extern bool(*WriteRecord)(UInt32 type, UInt32 version, const void *buffer, UInt32 length);
 	extern bool(*WriteRecordData)(const void *buffer, UInt32 length);
 	extern bool(*GetNextRecordInfo)(UInt32 *type, UInt32 *version, UInt32 *length);

@@ -161,7 +161,7 @@
     <ClCompile Include="internal\dinput.cpp">
       <Filter>internal</Filter>
     </ClCompile>
-    <ClCompile Include="internal\structs.cpp" />
+    <ClCompile Include="autocomplete.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nvse\nvse\GameAPI.h">
@@ -338,7 +338,6 @@
     <ClInclude Include="..\nvse\nvse\VarMap.h">
       <Filter>nvse</Filter>
     </ClInclude>
-    <ClInclude Include="structs.h" />
     <ClInclude Include="command_printer.h" />
     <ClInclude Include="console_arrays.h" />
     <ClInclude Include="..\nvse\nvse\ArrayVar.h">
@@ -348,6 +347,7 @@
     <ClInclude Include="internal\dinput.h">
       <Filter>internal</Filter>
     </ClInclude>
+    <ClInclude Include="autocomplete.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />

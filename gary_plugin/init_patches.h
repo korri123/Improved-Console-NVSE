@@ -20,18 +20,18 @@ __declspec(naked) void ResetQuestHook()
 	__asm
 	{
 		mov ecx, [ecx + 0x5C]
-			mov eax, 0x5A8BC0
-			call eax
-			mov ecx, [ebp - 0x2C]
-			mov eax, [ecx + 0x5C]
-			mov ecx, [ecx + 0x1C]
-			mov[eax], ecx
-			mov eax, 0x5AC020
-			call eax
-			mov ecx, [ebp - 0x2C]
-			mov ecx, [ecx + 0x5C]
-			mov[ecx + 0xC], eax
-			jmp retnAddr
+		mov eax, 0x5A8BC0
+		call eax
+		mov ecx, [ebp - 0x2C]
+		mov eax, [ecx + 0x5C]
+		mov ecx, [ecx + 0x1C]
+		mov[eax], ecx
+		mov eax, 0x5AC020
+		call eax
+		mov ecx, [ebp - 0x2C]
+		mov ecx, [ecx + 0x5C]
+		mov[ecx + 0xC], eax
+		jmp retnAddr
 	}
 }
 
@@ -39,26 +39,6 @@ __declspec(naked) void ResetQuestHook()
 void PatchMCM()
 {
 	WriteRelJump(0x60D841, (UInt32)ResetQuestHook);
-}
-
-void InjectScriptBufVariables(ScriptBuffer* scriptBuffer)
-{
-	for (const auto& variablePair : g_consoleVarIdMap)
-	{
-		const auto variable = variablePair.second;
-		auto* varInfo = reinterpret_cast<VariableInfo*>(GameHeapAlloc(sizeof(VariableInfo)));
-		MemZero(varInfo, sizeof(VariableInfo));
-		varInfo->idx = variable->id;
-		varInfo->name.Set(variable->name.c_str());
-		if (variable->type == kRetnType_Array)
-		{
-			variable->value = ConsoleArrays::InjectConsoleArray(variable->name);
-		}
-		varInfo->data = variable->value;
-		scriptBuffer->vars.Append(varInfo);
-		
-		PrintLog("Appended %s -> %d", variable->name.c_str(), varInfo->idx);
-	}
 }
 
 bool __cdecl HookCmd_Expression_Evaluate(UInt32 numParams, ParamInfo* paramInfo, ScriptLineBuffer* lineBuf, ScriptBuffer* scriptBuf)
@@ -105,7 +85,7 @@ bool PatchCmd_Expression_Evaluate()
 	//const static UInt8 OPCODE_RET = 0xC3;
 	const static UInt8 OPCODE_INT3 = 0xCC;
 	
-	auto* addressToPatch = const_cast<BYTE*>(addressVerify);
+	/*auto* addressToPatch = const_cast<BYTE*>(addressVerify);
 	auto numInt3s = 0;
 	while (numInt3s < 5) // reach head of function
 	{
@@ -118,9 +98,11 @@ bool PatchCmd_Expression_Evaluate()
 			numInt3s = 0;
 		}
 		addressToPatch--;
-	}
+	}*/
 	
-	WriteRelJump(UInt32(addressToPatch+6), UInt32(HookCmd_Expression_Evaluate));
+	WriteRelJump(UInt32(addressVerify), UInt32(HookCmd_Expression_Evaluate));
+
+	return true;
 }
 
 bool PatchAr_Iter()
@@ -152,6 +134,7 @@ bool PatchAr_Iter()
 
 	const static UInt8 OPCODE_JMP = 0xEB;
 	SafeWrite8((UInt32)addressToPatch, OPCODE_JMP);
+	return true;
 }
 
 bool PatchAr_Find()
@@ -183,6 +166,7 @@ bool PatchAr_Find()
 
 	const static UInt8 OPCODE_JMP = 0xEB;
 	SafeWrite8((UInt32)addressToPatch, OPCODE_JMP);
+	return true;
 }
 
 bool PatchNVSEStrings() {
@@ -213,6 +197,7 @@ bool PatchNVSEStrings() {
 
 	const static UInt8 OPCODE_JMP = 0xEB;
 	SafeWrite8((UInt32)addressToPatch, OPCODE_JMP);
+	return true;
 }
 
 bool PatchNVSEAsserts() {
@@ -246,6 +231,7 @@ bool PatchNVSEAsserts() {
 		const static UInt8 OPCODE_JMP = 0xEB;
 		SafeWrite8((UInt32)addressToPatch, OPCODE_JMP);
 	}
+	return true;
 }
 
 bool PatchNVSE() {

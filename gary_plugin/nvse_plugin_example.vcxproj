@@ -136,6 +136,7 @@
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalDependencies>psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateMapFile>true</GenerateMapFile>
     </Link>
     <PostBuildEvent>
       <Message>Installing DLL...</Message>
@@ -241,6 +242,7 @@
     <ClCompile Include="..\nvse\nvse\StringVar.cpp" />
     <ClCompile Include="..\nvse\nvse\ThreadLocal.cpp" />
     <ClCompile Include="..\nvse\nvse\Utilities.cpp" />
+    <ClCompile Include="autocomplete.cpp" />
     <ClCompile Include="command_printer.cpp" />
     <ClCompile Include="console_scroll.cpp" />
     <ClCompile Include="console_variables.cpp" />
@@ -257,7 +259,6 @@
     </ClCompile>
     <ClCompile Include="internal\dinput.cpp" />
     <ClCompile Include="internal\md5\md5.cpp" />
-    <ClCompile Include="internal\structs.cpp" />
     <ClCompile Include="internal\utility.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="memscan.cpp" />
@@ -315,6 +316,7 @@
     <ClInclude Include="..\nvse\nvse\ThreadLocal.h" />
     <ClInclude Include="..\nvse\nvse\Utilities.h" />
     <ClInclude Include="..\nvse\nvse\VarMap.h" />
+    <ClInclude Include="autocomplete.h" />
     <ClInclude Include="command_printer.h" />
     <ClInclude Include="console_scroll.h" />
     <ClInclude Include="console_variables.h" />
@@ -331,7 +333,6 @@
     <ClInclude Include="memscan.h" />
     <ClInclude Include="console_arrays.h" />
     <ClInclude Include="string_args_hooks.h" />
-    <ClInclude Include="structs.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\nvse\nvse\exports.def" />

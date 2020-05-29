@@ -9,8 +9,8 @@
 #include "command_printer.h"
 #include "console_arrays.h"
 #include "declarations.h"
+#include "GameUI.h"
 #include "SafeWrite.h"
-#include "structs.h"
 
 using namespace ImprovedConsole;
 
@@ -19,6 +19,11 @@ std::map<UInt32, std::shared_ptr<ConsoleVariable>> g_consoleVarIdMap;
 std::string g_lastConsoleInput;
 UInt32 g_idIncrementer = 0;
 std::shared_ptr<ConsoleVariable> g_lastVariableSet;
+
+TESForm* LookupForm(ConsoleVariable& variable)
+{
+	return LookupFormByID(*reinterpret_cast<UInt32*>(&variable.value));
+}
 
 std::string ConsoleVarToString(ConsoleVariable& variable)
 {
@@ -97,6 +102,31 @@ ConsoleVariable& GetConsoleVariable(const std::string& name)
 	return *GetConsoleVariablePtr(name);
 }
 
+Script::RefVariable* CreateRefVar(ConsoleVariable& variable)
+{
+	auto* refVar = reinterpret_cast<Script::RefVariable*>(GameHeapAlloc(sizeof(Script::RefVariable)));
+	MemZero(refVar, sizeof(Script::RefVariable));
+	refVar->form = LookupForm(variable);
+	refVar->name.Set(variable.name.c_str());
+	refVar->varIdx = variable.id;
+	return refVar;
+}
+
+VariableInfo* CreateVariable(std::shared_ptr<ConsoleVariable> variable)
+{
+	auto* varInfo = reinterpret_cast<VariableInfo*>(GameHeapAlloc(sizeof(VariableInfo)));
+	MemZero(varInfo, sizeof(VariableInfo));
+	varInfo->idx = variable->id;
+	varInfo->name.Set(variable->name.c_str());
+	if (variable->type == kRetnType_Array)
+	{
+		variable->value = ConsoleArrays::InjectConsoleArray(variable->name);
+	}
+	varInfo->data = variable->value;
+	varInfo->type = GetVarType(*variable);
+	return varInfo;
+}
+
 void __stdcall InjectScriptVariables(Script* scriptObj)
 {
 	if (scriptObj == nullptr)
@@ -112,21 +142,46 @@ void __stdcall InjectScriptVariables(Script* scriptObj)
 	for (const auto& variablePair : g_consoleVarIdMap)
 	{
 		const auto variable = variablePair.second;
-		VariableInfo *varInfo = scriptObj->GetVariableByName(variable->name.c_str());
+		if (variable->type == kRetnType_Form)
+		{
+			auto* refVar = CreateRefVar(*variable);
+			scriptObj->refList.Append(refVar) + 1;
+			scriptObj->info.numRefs++;
+		}
+		auto* varInfo = scriptObj->GetVariableByName(variable->name.c_str());
 		if (varInfo != nullptr)
 		{
 			continue;
 		}
+		varInfo = CreateVariable(variable);
+		
 		scriptObj->info.varCount++;
-		varInfo = reinterpret_cast<VariableInfo*>(GameHeapAlloc(sizeof(VariableInfo)));
-		MemZero(varInfo, sizeof(VariableInfo));
-		varInfo->idx = variable->id;
-		varInfo->name.Set(variable->name.c_str());
 		scriptObj->varList.Append(varInfo);
 
-		PrintLog("%s -> %d", variable->name.c_str(), varInfo->idx);
+		PrintLog("Appended to script %s -> %d", variable->name.c_str(), varInfo->idx);
 	}
 }
+
+void InjectScriptBufVariables(ScriptBuffer* scriptBuffer)
+{
+	for (const auto& variablePair : g_consoleVarIdMap)
+	{
+		const auto variable = variablePair.second;
+
+		if (variable->type == kRetnType_Form)
+		{
+			auto* refVar = CreateRefVar(*variable);
+			scriptBuffer->refVars.Append(refVar);
+			scriptBuffer->numRefs++;
+		}
+
+		auto* varInfo = CreateVariable(variable);
+		scriptBuffer->vars.Append(varInfo);
+		scriptBuffer->varCount++;
+		PrintLog("Appended to scriptBuf %s -> %d", variable->name.c_str(), varInfo->idx);
+	}
+}
+
 
 void __stdcall SetEventListVariables(ScriptEventList *eventList)
 {
@@ -154,13 +209,17 @@ void __stdcall SetEventListVariables(ScriptEventList *eventList)
 		{
 			eventListVar->data = ConsoleArrays::InjectConsoleArray(variable->name);
 		}
+		else if (variable->type == kRetnType_Form)
+		{
+			*reinterpret_cast<UInt64*>(&eventListVar->data) = *reinterpret_cast<UInt32*>(&variable->value);
+		}
 		else
 		{
 			eventListVar->data = variable->value;
 		}
 		eventList->m_vars->Append(eventListVar);
 
-		PrintLog("Set value of id %d to %.2f", eventListVar->id, eventListVar->data);
+		PrintLog("Set eventlist var value of id %d to %.2f", eventListVar->id, eventListVar->data);
 	}
 }
 
@@ -336,13 +395,14 @@ void __stdcall AddConsoleVarToMap(char* varNameCstr)
 
 	PrintLog("Added console var %s with id %d", nextVariable->name.c_str(), nextVariable->id);
 
-	g_consoleInterface->RunScriptLine(g_lastConsoleInput.c_str(), GameInterfaceManager::GetSingleton()->debugSelection);
+	g_consoleInterface->RunScriptLine(g_lastConsoleInput.c_str(), InterfaceManager::GetSingleton()->debugSelection);
 }
 
 __declspec(naked) void HookAddConsoleVar()
 {
 	static const UInt32 return_point = 0x5B10D1;
-	__asm {
+	__asm
+	{
 		lea ecx, [ebp - 0x22C]
 		push ecx
 		call AddConsoleVarToMap
@@ -358,7 +418,8 @@ void __stdcall SaveLastConsoleInput(char* inputStr) {
 __declspec(naked) void SaveConsoleInputHook() {
 	static const UInt32 ConsolePrint0 = 0x71D030;
 	static const UInt32 return_address = 0x71B506;
-	__asm {
+	__asm
+	{
 		call ConsolePrint0
 		lea ecx, [ebp - 0x81C]
 		push ecx
@@ -392,7 +453,7 @@ bool __stdcall ReplaceConsoleVarStringWithRefId(char** consoleVarNamePtr)
 
 		PrintLog("scriptline = %s", scriptLine.c_str());
 
-		g_consoleInterface->RunScriptLine(scriptLine.c_str(), GameInterfaceManager::GetSingleton()->debugSelection);
+		g_consoleInterface->RunScriptLine(scriptLine.c_str(), InterfaceManager::GetSingleton()->debugSelection);
 
 		return true;
 		//PrintLog("hex value %s", newValue.c_str());
@@ -427,11 +488,42 @@ __declspec(naked) void HookSetReferences()
 	}
 }
 
+__declspec(naked) void HookSetForms()
+{
+	static const UInt32 hookedCall = 0x5AF310;
+	static const UInt32 returnAddress = 0x5B1C3F;
+	__asm
+	{
+		call hookedCall
+		mov edx, [ebp + 0x14] // scriptBuffer
+		push edx
+		call InjectScriptBufVariables
+		jmp returnAddress
+	}
+}
+
+__declspec(naked) void HookSetCallingReference()
+{
+	const static UInt32 hookedCall = 0x5AF310;
+	const static UInt32 returnAddress = 0x5AFF80;
+	__asm
+	{
+		call hookedCall
+		mov edx, [ebp + 0xC] // scriptBuffer
+		push edx
+		call InjectScriptBufVariables
+		jmp returnAddress
+	}
+}
+
 void PatchInjectVariables()
 {
 	WriteRelJump(0x5AC439, UInt32(InjectScriptVariablesHook));
 	WriteRelJump(0x5E1BD3, UInt32(HookSetConsoleVarMap));
 	WriteRelJump(0x5B06AE, UInt32(HookAddConsoleVar));
 	WriteRelJump(0x71B501, UInt32(SaveConsoleInputHook));
-	WriteRelJump(0x5B0E34, UInt32(HookSetReferences));
+	//WriteRelJump(0x5B0E34, UInt32(HookSetReferences));
+	WriteRelJump(0x5AFF7B, UInt32(HookSetCallingReference));
+	//WriteRelJump(0x5AEBB1, UInt32(HookSetForms));
+	WriteRelJump(0x5B1C3A, UInt32(HookSetForms));
 }
