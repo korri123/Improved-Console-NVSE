@@ -1,9 +1,0 @@
-﻿  ScriptUtils.cpp
-     Creating library C:\Users\KormakurBreki\Documents\nvse plugin\blank_proj -combined - Copy - Copy\gary_plugin\Release\gary_plugin.lib and object C:\Users\KormakurBreki\Documents\nvse plugin\blank_proj -combined - Copy - Copy\gary_plugin\Release\gary_plugin.exp
-  Generating code
-  Compiler version has changed, fall back to full compilation.
-  All 3392 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
-  Finished generating code
-  nvse_plugin_example.vcxproj -> C:\Users\KormakurBreki\Documents\nvse plugin\blank_proj -combined - Copy - Copy\gary_plugin\Release\gary_plugin.dll
-  Installing DLL...
-          1 file(s) copied.
