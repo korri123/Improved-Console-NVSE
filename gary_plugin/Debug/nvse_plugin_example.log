@@ -1,8 +1,3 @@
-﻿  console_variables.cpp
-c:\users\kormakurbreki\documents\nvse plugin\blank_proj -combined - copy - copy\gary_plugin\console_variables.cpp(148): warning C4552: '+' : operator has no effect; expected operator with side-effect
-  Generating Code...
-  Compiling...
-  main.cpp
-  Generating Code...
-  nvse_plugin_example.vcxproj -> C:\Users\KormakurBreki\Documents\nvse plugin\blank_proj -combined - Copy - Copy\gary_plugin\Debug\gary_plugin.dll
+﻿  variable_hooks.cpp
+  nvse_plugin_example.vcxproj -> C:\Users\KormakurBreki\Documents\nvse plugin\Improved Console 2020\gary_plugin\Debug\gary_plugin.dll
           1 file(s) copied.

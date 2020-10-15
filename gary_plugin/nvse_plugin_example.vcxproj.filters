@@ -162,6 +162,7 @@
       <Filter>internal</Filter>
     </ClCompile>
     <ClCompile Include="autocomplete.cpp" />
+    <ClCompile Include="variable_hooks.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nvse\nvse\GameAPI.h">
@@ -348,6 +349,7 @@
       <Filter>internal</Filter>
     </ClInclude>
     <ClInclude Include="autocomplete.h" />
+    <ClInclude Include="variable_hooks.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />

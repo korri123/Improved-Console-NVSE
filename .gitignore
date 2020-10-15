@@ -360,3 +360,11 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+Release
+Debug\ VC9
+common/Debug\ VC9
+gary_plugin/Debug
+gary_plugin/Release
+*.obj
+*.dll

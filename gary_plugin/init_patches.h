@@ -1,6 +1,5 @@
 #pragma once
 #include "memscan.h"
-#include "SafeWrite.h"
 #include <fstream>
 
 
@@ -8,12 +7,13 @@
 #include "console_variables.h"
 #include "ScriptUtils.h"
 
+#include "SafeWrite.h"
 
-void PatchRemoteDesktop() {
-	// 0x86A8AB jz -> jmp
-	SafeWrite8(0x86A8AB, 0xEB);
+inline void PatchRemoteDesktop() {
+	const static auto opcode_jmp = 0xEB;
+	SafeWrite8(0x86A8AB, opcode_jmp);
 }
-
+#if 0
 __declspec(naked) void ResetQuestHook()
 {
 	static const UInt32 retnAddr = 0x60D881;
@@ -191,7 +191,7 @@ bool PatchNVSEStrings() {
 	PrintLog("string opcode: %X", *addressToPatch);
 
 	if (*addressToPatch != 0x75) {
-		PrintLog("Unable to hook NVSE");
+		PrintLog("Unable to hook NVSE (string opcode was not jump)");
 		return false;
 	}
 
@@ -224,7 +224,7 @@ bool PatchNVSEAsserts() {
 		PrintLog("assert opcode: %X", *addressToPatch);
 
 		if (*addressToPatch != 0x74) {
-			PrintLog("Unable to hook NVSE");
+			PrintLog("Unable to hook NVSE (assert opcode was not JMP)");
 			return false;
 		}
 
@@ -246,15 +246,15 @@ bool PatchNVSE() {
 
 	if (!PatchNVSEStrings()) return false;
 	if (!PatchNVSEAsserts()) return false;
-	if (!PatchCmd_Expression_Evaluate()) return false;
-	if (!PatchAr_Find()) return false;
-	if (!PatchAr_Iter()) return false;
+	//if (!PatchCmd_Expression_Evaluate()) return false;
+	//if (!PatchAr_Find()) return false;
+	//if (!PatchAr_Iter()) return false;
 
 	PrintLog("NVSE Patched");
 	// 15D661B8
 	return true;
 }
-
+#endif
 void PatchStupidBug() {
 	//PatchMemoryNop(0x467A45, 7);
 	WriteRelJump(0x467A15, 0x467A4E);

@@ -125,6 +125,7 @@
       <ForcedIncludeFiles>nvse/prefix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
@@ -140,7 +141,8 @@
     </Link>
     <PostBuildEvent>
       <Message>Installing DLL...</Message>
-      <Command>copy "$(TargetPath)" "C:\Users\KormakurBreki\AppData\Local\ModOrganizer\Fallout NV\mods\Improved Console\NVSE\Plugins\ImprovedConsole.dll"</Command>
+      <Command>copy "$(TargetPath)" "C:\Users\KormakurBreki\AppData\Local\ModOrganizer\Fallout NV\mods\Improved Console\NVSE\Plugins\ImprovedConsole.dll"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug ng|Win32'">
@@ -263,6 +265,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="memscan.cpp" />
     <ClCompile Include="console_arrays.cpp" />
+    <ClCompile Include="variable_hooks.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nvse\nvse\ArrayVar.h" />
@@ -333,6 +336,7 @@
     <ClInclude Include="memscan.h" />
     <ClInclude Include="console_arrays.h" />
     <ClInclude Include="string_args_hooks.h" />
+    <ClInclude Include="variable_hooks.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\nvse\nvse\exports.def" />

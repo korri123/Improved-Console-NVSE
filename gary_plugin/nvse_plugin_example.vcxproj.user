@@ -3,4 +3,9 @@
   <PropertyGroup>
     <ShowAllFiles>false</ShowAllFiles>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommand>C:\Steam\steamapps\common\Fallout New Vegas\FalloutNV.exe</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>C:\Steam\steamapps\common\Fallout New Vegas\</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>

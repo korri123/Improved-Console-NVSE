@@ -7,6 +7,7 @@
 #include "console_variables.h"
 #include "string_args_hooks.h"
 #include "declarations.h"
+#include "variable_hooks.h"
 
 using namespace ImprovedConsole;
 
@@ -63,6 +64,7 @@ void InitInterfaces(const NVSEInterface *nvse)
 	LookupArrayByID = arrInterface->LookupArrayByID;
 	GetElement = arrInterface->GetElement;
 	GetElements = arrInterface->GetElements;
+	g_arrayInterface = arrInterface;
 
 	const auto* nvseData = static_cast<NVSEDataInterface*>(nvse->QueryInterface(kInterface_Data));
 	g_DIHookCtrl = static_cast<DIHookControl*>(nvseData->GetSingleton(NVSEDataInterface::kNVSEData_DIHookControl));
@@ -80,7 +82,7 @@ bool NVSEPlugin_Query(const NVSEInterface *nvse, PluginInfo *info)
 	info->name = "Improved Console";
 	info->version = IMPROVED_CONSOLE_PLUGIN_VERSION;
 
-	s_log.Create("ImprovedConsole.log");
+	s_log.OpenWrite("ImprovedConsole.log");
 	if (nvse->runtimeVersion != RUNTIME_VERSION_1_4_0_525)
 	{
 		PrintLog("ERROR: Unsupported runtime version (%08X).", nvse->runtimeVersion);
@@ -100,14 +102,14 @@ bool NVSEPlugin_Load(const NVSEInterface *nvse)
 {
 	
 	PatchRemoteDesktop();
-	if (!PatchNVSE()) return false;
+	//if (!PatchNVSE()) return false;
 
 	InitInterfaces(nvse);
-	PatchInjectVariables();
+	// PatchInjectVariables();
 	PatchPrintAnything();
-	PatchConsoleVariables();
+	PatchVariables();
+	// PatchConsoleVariables();
 	PatchIsAlpha();
-
 
 	//PrepareForHell();
 	//REG_CMD(Assign);

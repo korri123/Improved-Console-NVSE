@@ -6,6 +6,7 @@
 #include "console_arrays.h"
 #include "console_variables.h"
 #include "SafeWrite.h"
+#include <cmath>
 
 using namespace ImprovedConsole;
 
@@ -14,6 +15,7 @@ CommandReturnType g_lastReturnType = kRetnType_Ambiguous;
 bool g_commandWasFunction = false;
 bool g_lastCommandWasSet = false;
 int g_commandPrints = 0;
+bool g_cmdCalled = false;
 
 std::string RetnTypeToString(CommandReturnType type)
 {
@@ -69,21 +71,19 @@ std::string FormatElement(NVSEArrayVarInterface::Element* element) {
 void PrintArray(NVSEArrayVar* arrayPtr)
 {
 	if (arrayPtr == nullptr) {
-		Console_Print("Could not get array");
+		Console_Print("Invalid array");
 		return;
 	}
 
 	const int size = GetArraySize(arrayPtr);
-
 	if (size == 0) {
 		Console_Print("Empty array");
 		return;
 	}
 
-	std::vector<NVSEArrayVarInterface::Element> keys(size);// <NVSEArrayVarInterface::Element>(size);
-	std::vector<NVSEArrayVarInterface::Element> values(size);// <NVSEArrayVarInterface::Element>(size);
-	GetElements(arrayPtr, &values[0], &keys[0]);
-
+	std::vector<NVSEArrayVarInterface::Element> keys(size);
+	std::vector<NVSEArrayVarInterface::Element> values(size);
+	GetElements(arrayPtr, values.data(), keys.data());
 	for (int i = 0; i < size; i++) {
 		NVSEArrayVarInterface::Element key = keys[i];
 		NVSEArrayVarInterface::Element value = values[i];
@@ -121,7 +121,8 @@ void PrintForm(TESForm* form)
 	}
 }
 
-void PrintForm(const UInt32 formId) {
+void PrintForm(const UInt32 formId)
+{
 	TESForm* form = LookupFormByID(formId);
 	PrintForm(form);
 }
@@ -204,7 +205,7 @@ void PrintElement(NVSEArrayElement& element)
 	case ConsoleArrays::kDataType_Invalid:
 	default:
 	{
-		Console_Print("Invalid value");
+		Console_Print("Invalid element");
 		break;
 	}
 	}
@@ -225,41 +226,34 @@ bool PrintArrayIndex(std::string& varName, std::string& index)
 	}
 }
 
-void __stdcall PrintResult(char** commandNamePtr, double* resultPtr) {
-	if (commandNamePtr == nullptr || resultPtr == nullptr)
-	{
-		return;
-	}
-
-	const auto resultValue = *resultPtr;
-	const auto* commandName = *commandNamePtr;
-	const auto* commandInfo = GetCmdByName(commandName);
+void PrintResult(CommandInfo* commandInfo, double result)
+{
 	auto returnType = static_cast<CommandReturnType>(GetCmdReturnType(commandInfo));
 
 	g_commandWasFunction = true;
 	g_lastReturnType = returnType;
 	g_lastCommandWasSet = false;
-	g_lastResultValue = resultValue;
+	g_lastResultValue = result;
 
 	if (g_commandPrints != 0)
 	{
 		PrintLog("something already printed, aborting");
 		return;
 	}
+	if (std::isnan(result))
+	{
+		PrintLog("command did not change result value, aborting");
+		return;
+	}
 
-	const auto formId = *reinterpret_cast<UInt32*>(resultPtr);
-	if (LookupFormByID(formId)) {
+	const auto formId = *reinterpret_cast<UInt32*>(&result);
+	if (LookupFormByID(formId)) 
+	{
 		returnType = kRetnType_Form;
 	}
 
-	Console_Print("<Improved Console> %s", commandName);
-	PrintVar(resultValue, returnType);
-
-	
-	/*auto end = GetCmdTblEnd();
-	for (auto i = GetCmdTblStart(); i != end; i++) {
-	PrintLog("%s %s", i->shortName, i->longName);;
-	}*/
+	Console_Print("<Improved Console> %s", commandInfo->longName);
+	PrintVar(result, returnType);
 }
 
 void __stdcall HookHandleVariableChanges(ScriptEventList *eventList)
@@ -275,86 +269,41 @@ void __stdcall HookHandleVariableChanges(ScriptEventList *eventList)
 	}
 }
 
-__declspec(naked) void PrintAnythingHook() {
-	static const UInt32 return_address = 0x5E234E;
-	__asm {
-			call IsConsoleMode
-			test al, al
-			jz originalFunc
-
-			mov ecx, [ebp + 0x8]
-			push ecx
-			call InjectScriptVariables
-
-			mov edx, [ebp - 0xED0]
-			mov ecx, [edx + 0x8]
-			push ecx // eventList
-			call SetEventListVariables
-
-		originalFunc:
-			mov g_commandPrints, 0
-			call dword ptr ss : [ebp - 0xEB8]
-			add esp, 0x20
-			push eax
-			test al, al
-			jz retnFunc
-
-			call IsConsoleMode
-			test al, al
-			jz retnFunc
-
-			lea ecx, [ebp - 0xEC4] // double* result
-			push ecx
-			mov ecx, [ebp - 0x30] // command name
-			push ecx
-			call PrintResult
-
-			mov edx, [ebp - 0xED0]
-			mov ecx, [edx + 0x8]
-			push ecx // eventList
-			call HookHandleVariableChanges
-		retnFunc:
-			pop eax
-			jmp return_address
-	}
+void __stdcall PrintCommandResult(double commandResult, ScriptRunner* scriptRunner, CommandInfo* commandInfo)
+{
+	if (commandInfo)
+		PrintResult(commandInfo, commandResult);
+	g_cmdCalled = false;
 }
 
-__declspec(naked) void PrintAnythingHookSet() // like above but for set
+__declspec(naked) void PrintCommandResultHook()
 {
 	__asm
 	{
-			mov edx, [ebp + 0x20] // event list
-			push edx
-			call SetEventListVariables
-
-			call [ebp - 0x34] // run script line
-			add esp, 0x20
-			movzx eax, al
-			push eax
-			test eax, eax
-			jz funcEnd
-
-			call IsConsoleMode
-			test al, al
-			jz funcEnd
-
-			mov g_commandPrints, 0
+		test al, al
+		jz epilogue
+		push eax // save return value
+		call IsConsoleMode
+		test al, al
+		jz restoreReturnValue
+		mov al, g_cmdCalled
+		test al, al
+		jz restoreReturnValue
 		
-			mov ecx, [ebp + 0x8]// result
-			push ecx
-			mov ecx, [ebp - 0x24]
-			push ecx
-			call PrintResult
-
-			mov edx, [ebp + 0x20] // event list
-			push edx
-			call HookHandleVariableChanges
-
-		funcEnd:
-			pop eax
-			mov esp, ebp
-			pop ebp
-			ret
+		mov ecx, [ebp - 0x30] // CommandInfo*
+		push ecx
+		mov ecx, [ebp - 0xED0] // ScriptRunner*
+		push ecx
+		sub esp, 8
+		fld qword ptr [ebp - 0xEC4]
+		fstp qword ptr [esp] // double result
+		call PrintCommandResult
+	restoreReturnValue:
+		pop eax
+	epilogue:
+		mov esp, ebp
+		pop ebp
+		ret 0x24
 	}
 }
 
@@ -367,11 +316,39 @@ __declspec(naked) void HookConsolePrint()
 	}
 }
 
-void PatchPrintAnything() {
-	const static UInt32 hook = 0x5E2345;
-	WriteRelJump(hook, UInt32(PrintAnythingHook));
-	PatchMemoryNop(hook + 0x5, 1);
+void __stdcall PreCommandCall(double* commandResult)
+{
+	// reset command prints so that when this gets incremented in hook we know that the function printed something
+	g_commandPrints = 0;
 
-	WriteRelJump(0x5ACBB5, UInt32(PrintAnythingHookSet));
-	WriteRelJump(0x71D376, UInt32(HookConsolePrint));
+	// set *result to NaN to compare with later so that we know if it got modified in the command or not
+	*commandResult = std::numeric_limits<double>::quiet_NaN();
+
+	// confirm function call subroutine was called
+	g_cmdCalled = true;
 }
+
+__declspec(naked) void PreCommandCallHook()
+{
+	const static UInt32 returnAddress = 0x5E22F3;
+ 	__asm
+	{
+		// original assembly
+		mov [ebp - 0xEB8], eax
+
+		// hook
+		lea eax, [ebp - 0xEC4]
+		push eax
+		call PreCommandCall
+		
+		jmp returnAddress
+	}
+}
+
+void PatchPrintAnything() {
+	WriteRelJump(0x5E239C, UInt32(PrintCommandResultHook));
+	WriteRelJump(0x71D376, UInt32(HookConsolePrint));
+	WriteRelJump(0x5E22ED, UInt32(PreCommandCallHook));
+}
+
+// TODO PrintCommandResultHook is not at a safe place (COC goodsprings)

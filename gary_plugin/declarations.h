@@ -48,4 +48,12 @@ namespace ImprovedConsole
 	extern Script* g_consoleScript;
 
 	bool IsConsoleOpen();
+
+	extern const NVSEArrayVarInterface* g_arrayInterface;
+}
+
+namespace Game
+{
+	extern void (__cdecl *CopyVarList)(Script::VarInfoList* from, Script::VarInfoList* to);
+	extern void (__cdecl *CopyRefList)(Script::RefVarList* from, Script::RefVarList* to);
 }

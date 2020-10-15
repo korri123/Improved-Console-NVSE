@@ -25,26 +25,6 @@
 #include "ThreadLocal.h"
 #include "PluginManager.h"
 
-__declspec(naked) bool TESForm::IsReference()
-{
-	__asm
-	{
-		mov		eax, [ecx]
-			cmp		eax, kVtbl_TESObjectREFR
-			jz		done
-			cmp		eax, kVtbl_PlayerCharacter
-			jz		done
-			cmp		eax, kVtbl_Character
-			jz		done
-			cmp		eax, kVtbl_Creature
-			jz		done
-			cmp		eax, kVtbl_GrenadeProjectile
-		done :
-		setz	al
-			retn
-	}
-}
-
 VariableInfo* GetVariableByName(Script::VarInfoList* entry, const char* varName)
 {
 	for (auto* node = entry->Head(); node; node = node->next)

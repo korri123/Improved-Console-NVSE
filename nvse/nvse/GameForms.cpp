@@ -710,6 +710,26 @@ void TESFaction::SetNthRankName(const char* newName, UInt32 whichRank, bool bFem
 	}
 }
 
+__declspec(naked) bool TESForm::IsReference()
+{
+	__asm
+	{
+		mov		eax, [ecx]
+		cmp		eax, kVtbl_TESObjectREFR
+		jz		done
+		cmp		eax, kVtbl_PlayerCharacter
+		jz		done
+		cmp		eax, kVtbl_Character
+		jz		done
+		cmp		eax, kVtbl_Creature
+		jz		done
+		cmp		eax, kVtbl_GrenadeProjectile
+	done:
+		setz	al
+		retn
+	}
+}
+
 #if 0
 UInt32 EffectItemList::CountItems() const
 {

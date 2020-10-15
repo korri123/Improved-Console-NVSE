@@ -128,6 +128,7 @@ namespace ConsoleArrays
 
 		double result = 0;
 		AssignCommandResult(arrayPtr, &result);
+		PrintLog("Array packed: %d", g_arrayInterface->GetArrayPacked(arrayPtr));
 		return result;
 	}
 

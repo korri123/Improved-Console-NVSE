@@ -50,6 +50,19 @@ namespace ImprovedConsole
 		auto* consoleManager = ConsoleManager::GetSingleton();
 		return static_cast<bool>(ThisStdCall_B(0x4A4020, static_cast<void*>(consoleManager)));
 	}
+
+	const NVSEArrayVarInterface* g_arrayInterface = nullptr;
+
+	
+
+	
+}
+
+
+namespace Game
+{
+	void (__cdecl *CopyVarList)(Script::VarInfoList* from, Script::VarInfoList* to) = reinterpret_cast<void (*)(Script::VarInfoList * from, Script::VarInfoList * to)>(0x5AB930);
+	void (__cdecl*CopyRefList)(Script::RefVarList* from, Script::RefVarList* to) = reinterpret_cast<void (*)(Script::RefVarList * from, Script::RefVarList * to)>(0x5AB7F0);
 }
 
 enum
