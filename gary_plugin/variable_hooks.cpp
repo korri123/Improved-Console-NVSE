@@ -22,23 +22,6 @@ void __fastcall PostScriptCompile(ScriptBuffer* scriptBuffer)
 	g_numRefs = scriptBuffer->numRefs;
 }
 
-__declspec(naked) void PostScriptCompileHook()
-{
-	const static UInt32 destroyScriptBuf = 0x5AE5C0;
-	const static UInt32 returnAddress = 0x5AEEB9;
-	__asm
-	{
-		// my stuff
-		push ecx
-		call PostScriptCompile // ScriptBuffer* is in ecx, func is fastcall
-		pop ecx
-
-		// original asm
-		call destroyScriptBuf
-		jmp returnAddress
-	}
-}
-
 void __fastcall PreScriptCompile(ScriptBuffer* scriptBuffer, Script* script)
 {
 	// copy from my copy to scriptbuf which is about to be compiled
@@ -51,47 +34,75 @@ void __fastcall PreScriptCompile(ScriptBuffer* scriptBuffer, Script* script)
 	scriptBuffer->numRefs = g_numRefs;
 }
 
-__declspec(naked) void PreScriptCompileHook()
+__declspec(naked) void ScriptCompileHook()
 {
-	const static UInt32 getScriptText = 0x55B980;
-	const static UInt32 returnAddress = 0x5AEE8E;
+	const static UInt32 scriptCompile = 0x5AEB90;
+	const static UInt32 returnAddress = 0x5AEEA1;
 	__asm
 	{
-		// original asm
-		call getScriptText
-		
-		// my stuff
-		push eax
-
+		push ecx
 		mov edx, [ebp + 0x8] // Script*
 		lea ecx, [ebp - 0x64] // ScriptBuffer*
 		call PreScriptCompile
-		
+		pop ecx
+		call scriptCompile // original asm
+		push eax
+		mov edx, [ebp + 0x8] // Script*
+		lea ecx, [ebp - 0x64] // ScriptBuffer*
+		call PostScriptCompile
 		pop eax
 		jmp returnAddress
 	}
 }
 
-void __fastcall InsertEventList(ScriptEventList* eventList)
+ScriptEventList* g_scriptEventList = nullptr;
+
+void __fastcall PreScriptExecute(Script* script, ScriptEventList** eventList)
 {
-	
-	
+	if (*eventList)
+		// If a ref with a script attached is selected it uses that event list
+		return;
+	*eventList = script->CreateEventList();
 }
 
-__declspec(naked) void InsertEventListHook()
+void __fastcall PostScriptExecute(ScriptEventList* eventList)
 {
-	const static UInt32 returnAddress = 0x5AC48E;
+	auto* eventListVarIter = eventList->m_vars->Head();
+	auto* cachedVarIter = g_varList.Head();
+	
+	while (eventListVarIter && cachedVarIter)
+	{
+		// save new values after script has executed
+		cachedVarIter->data->data = eventListVarIter->data->data;
+		eventListVarIter = eventListVarIter->next; cachedVarIter = cachedVarIter->next;
+	}
+	GameHeapFree(eventList);
+}
+
+__declspec(naked) void ScriptExecuteHook()
+{
+	const static UInt32 scriptExecute = 0x5AC1E0;
+	const static UInt32 returnAddress = 0x5AC4B3;
 	__asm
 	{
-		mov ecx, [ebp - 0x14] // ScriptEventList*
-		call InsertEventList
+		push ecx
+		lea edx, [ebp - 0x14] // ScriptEventList**
+		call PreScriptExecute // ecx already contains Script*
+
+		// event list has already been pushed to stack, edit it
+		mov ecx, [ebp - 0x14]
+		mov [esp + 0x8], ecx
+
+		pop ecx
+		call scriptExecute // original asm
+		mov ecx, [ebp - 0x14]
+		call PostScriptExecute
 		jmp returnAddress
 	}
 }
 
 void PatchVariables()
 {
-	WriteRelCall(0x5AEE89, UInt32(PreScriptCompileHook));
-	WriteRelCall(0x5AEEB4, UInt32(PostScriptCompileHook));
-	WriteRelCall(0x5AC487, UInt32(InsertEventListHook));
+	WriteRelJump(0x5AEE9C, UInt32(ScriptCompileHook));
+	WriteRelJump(0x5AC4AE, UInt32(ScriptExecuteHook));
 }

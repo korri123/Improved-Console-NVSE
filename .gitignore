@@ -368,3 +368,4 @@ gary_plugin/Debug
 gary_plugin/Release
 *.obj
 *.dll
+*.obj

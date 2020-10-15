@@ -15,7 +15,6 @@ CommandReturnType g_lastReturnType = kRetnType_Ambiguous;
 bool g_commandWasFunction = false;
 bool g_lastCommandWasSet = false;
 int g_commandPrints = 0;
-bool g_cmdCalled = false;
 
 std::string RetnTypeToString(CommandReturnType type)
 {
@@ -273,37 +272,39 @@ void __stdcall PrintCommandResult(double commandResult, ScriptRunner* scriptRunn
 {
 	if (commandInfo)
 		PrintResult(commandInfo, commandResult);
-	g_cmdCalled = false;
 }
 
 __declspec(naked) void PrintCommandResultHook()
 {
+	static const UInt32 returnAddress = 0x5E2351;
 	__asm
 	{
+		// hooking a non trivial place, restoring asm
+		add esp, 0x20
+		
+		push eax
 		test al, al
-		jz epilogue
+		jz returnToFunction
 		push eax // save return value
 		call IsConsoleMode
 		test al, al
-		jz restoreReturnValue
-		mov al, g_cmdCalled
-		test al, al
-		jz restoreReturnValue
+		jz returnToFunction
 		
 		mov ecx, [ebp - 0x30] // CommandInfo*
 		push ecx
 		mov ecx, [ebp - 0xED0] // ScriptRunner*
 		push ecx
+		
+		// double result
 		sub esp, 8
 		fld qword ptr [ebp - 0xEC4]
-		fstp qword ptr [esp] // double result
+		fstp qword ptr [esp]
+		
 		call PrintCommandResult
-	restoreReturnValue:
+	returnToFunction:
 		pop eax
-	epilogue:
-		mov esp, ebp
-		pop ebp
-		ret 0x24
+		movzx edx, al // original  asm
+		jmp returnAddress
 	}
 }
 
@@ -323,9 +324,6 @@ void __stdcall PreCommandCall(double* commandResult)
 
 	// set *result to NaN to compare with later so that we know if it got modified in the command or not
 	*commandResult = std::numeric_limits<double>::quiet_NaN();
-
-	// confirm function call subroutine was called
-	g_cmdCalled = true;
 }
 
 __declspec(naked) void PreCommandCallHook()
@@ -346,7 +344,7 @@ __declspec(naked) void PreCommandCallHook()
 }
 
 void PatchPrintAnything() {
-	WriteRelJump(0x5E239C, UInt32(PrintCommandResultHook));
+	WriteRelJump(0x5E234B, UInt32(PrintCommandResultHook));
 	WriteRelJump(0x71D376, UInt32(HookConsolePrint));
 	WriteRelJump(0x5E22ED, UInt32(PreCommandCallHook));
 }
