@@ -33,3 +33,15 @@ void PatchIsAlpha()
 	SafeWrite8(ScriptCharTableAddr + ']' * 2, 2);
 	SafeWrite8(ScriptCharTableAddr + '$' * 2, 2);
 }
+
+const auto* g_arrayVar = "array_var";
+const auto* g_stringVar = "string_var";
+
+void PatchTokenTypeDefs()
+{
+	const auto tokenAliasFloat = 0x118CBF4;
+	const auto tokenAliasLong = 0x118CBCC;
+	SafeWrite32(tokenAliasFloat, UInt32(g_arrayVar));
+	SafeWrite32(tokenAliasLong, UInt32(g_stringVar));
+}
+

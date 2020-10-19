@@ -4,10 +4,10 @@
 #include "init_patches.h"
 #include "command_printer.h"
 #include "console_scroll.h"
-#include "console_variables.h"
-#include "string_args_hooks.h"
+#include "nvse_hooks.h"
 #include "declarations.h"
-#include "variable_hooks.h"
+#include "interpreter.h"
+#include "variables.h"
 
 using namespace ImprovedConsole;
 
@@ -110,6 +110,8 @@ bool NVSEPlugin_Load(const NVSEInterface *nvse)
 	PatchVariables();
 	// PatchConsoleVariables();
 	PatchIsAlpha();
+	PatchTokenTypeDefs();
+	PatchInterpreter();
 
 	//PrepareForHell();
 	//REG_CMD(Assign);

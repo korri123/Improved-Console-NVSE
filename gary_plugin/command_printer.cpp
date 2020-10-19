@@ -3,8 +3,6 @@
 #include <iomanip>
 #include <sstream>
 #include "declarations.h"
-#include "console_arrays.h"
-#include "console_variables.h"
 #include "SafeWrite.h"
 #include <cmath>
 
@@ -15,6 +13,15 @@ CommandReturnType g_lastReturnType = kRetnType_Ambiguous;
 bool g_commandWasFunction = false;
 bool g_lastCommandWasSet = false;
 int g_commandPrints = 0;
+
+enum ElementType
+{
+	kDataType_Invalid,
+	kDataType_Numeric,
+	kDataType_Form,
+	kDataType_String,
+	kDataType_Array
+};
 
 std::string RetnTypeToString(CommandReturnType type)
 {
@@ -33,17 +40,16 @@ std::string FormatElement(NVSEArrayVarInterface::Element* element) {
 	
 	switch (element->GetType())
 	{
-	case ConsoleArrays::kDataType_Numeric:
+	case kDataType_Numeric:
 	{
 		stream << std::fixed << std::setprecision(2) << element->Number();
 		return stream.str();
 	}
-	case ConsoleArrays::kDataType_Form:
+	case kDataType_Form:
 	{
 		auto form = element->Form();
 		const char* fullName = GetFullName(form);
 		const char* editorId = form->GetName();
-		UInt32 refId = form->refID;
 
 		stream << "(FormID: " << std::hex << form->refID;
 		if (strlen(editorId) > 0) {
@@ -56,10 +62,10 @@ std::string FormatElement(NVSEArrayVarInterface::Element* element) {
 		stream << ")";
 		return stream.str();
 	}
-	case ConsoleArrays::kDataType_String:
+	case kDataType_String:
 		stream << "\"" << element->String() << "\"";
 		return stream.str();
-	case ConsoleArrays::kDataType_Array:
+	case kDataType_Array:
 		stream << "Array (ID " << (UInt32)element->Array() << ")";
 		return stream.str();
 	}
@@ -90,7 +96,7 @@ void PrintArray(NVSEArrayVar* arrayPtr)
 		auto keyStr = FormatElement(&key);
 		auto valStr = FormatElement(&value);
 
-		Console_Print("(Key) >> %s; (Value) >> %s", keyStr.c_str(), valStr.c_str());
+		Console_Print("%s >> %s", keyStr.c_str(), valStr.c_str());
 	}
 	Console_Print("Array Size >> %d", size);
 }
@@ -180,48 +186,33 @@ void PrintVar(double value, CommandReturnType type)
 
 void PrintElement(NVSEArrayElement& element)
 {
-	switch (static_cast<ConsoleArrays::ElementType>(element.GetType())) {
-	case ConsoleArrays::kDataType_Numeric:
+	switch (static_cast<ElementType>(element.GetType())) {
+	case kDataType_Numeric:
 	{
 		PrintFloat(element.Number());
 		break;
 	}
-	case ConsoleArrays::kDataType_Form:
+	case kDataType_Form:
 	{
 		PrintForm(element.Form());
 		break;
 	}
-	case ConsoleArrays::kDataType_String:
+	case kDataType_String:
 	{
 		PrintString(element.String());
 		break;
 	}
-	case ConsoleArrays::kDataType_Array:
+	case kDataType_Array:
 	{
 		PrintArray(element.Array());
 		break;
 	}
-	case ConsoleArrays::kDataType_Invalid:
+	case kDataType_Invalid:
 	default:
 	{
 		Console_Print("Invalid element");
 		break;
 	}
-	}
-}
-
-bool PrintArrayIndex(std::string& varName, std::string& index)
-{
-	try
-	{
-		auto elem = ConsoleArrays::GetElementAtIndex(varName, index);
-		PrintElement(elem);
-		return true;
-	}
-	catch (std::invalid_argument& e)
-	{
-		PrintLog(e.what());
-		return false;
 	}
 }
 
@@ -253,19 +244,6 @@ void PrintResult(CommandInfo* commandInfo, double result)
 
 	Console_Print("<Improved Console> %s", commandInfo->longName);
 	PrintVar(result, returnType);
-}
-
-void __stdcall HookHandleVariableChanges(ScriptEventList *eventList)
-{
-	for (const auto& consoleVarEntry : g_consoleVarIdMap)
-	{
-		const auto consoleVar = consoleVarEntry.second;
-		const auto* eventListVar = eventList->GetVariable(consoleVar->id);
-		if (consoleVar->value != eventListVar->data)
-		{
-			consoleVar->value = eventListVar->data;
-		}
-	}
 }
 
 void __stdcall PrintCommandResult(double commandResult, ScriptRunner* scriptRunner, CommandInfo* commandInfo)
@@ -348,5 +326,3 @@ void PatchPrintAnything() {
 	WriteRelJump(0x71D376, UInt32(HookConsolePrint));
 	WriteRelJump(0x5E22ED, UInt32(PreCommandCallHook));
 }
-
-// TODO PrintCommandResultHook is not at a safe place (COC goodsprings)

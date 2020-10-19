@@ -7,13 +7,11 @@
 #include "GameObjects.h"
 #include <string>
 
-#include "console_variables.h"
 #include "declarations.h"
 #include "ParamInfos.h"
 #include "FunctionScripts.h"
 #include "GameRTTI.h"
 #include "Hooks_Script.h"
-#include "console_arrays.h"
 
 #if RUNTIME
 
@@ -1965,7 +1963,7 @@ bool ExpressionParser::ParseUserFunctionCall()
 	// if recursive call, look up from ScriptBuffer instead
 	if (funcScript)
 	{
-		char* funcScriptText = funcScript->text;
+		const char* funcScriptText = funcScript->text;
 		Script::VarInfoList* funcScriptVars = &funcScript->varList;
 
 		if (!_stricmp(GetEditorID(funcScript), m_scriptBuf->scriptName.m_data))
@@ -2586,17 +2584,7 @@ ScriptToken* ExpressionParser::ParseOperand(Operator* curOp)
 		VariableInfo* varInfo = LookupVariable(token.c_str(), NULL);
 		if (varInfo)
 		{
-			Script::ScriptVarType varType;
-			try
-			{
-				const auto& consoleVar = GetConsoleVariable(varInfo->name.CStr());
-				varType = GetVarType(consoleVar);
-			}
-			catch (std::invalid_argument& e)
-			{
-				varType = static_cast<Script::ScriptVarType>(m_scriptBuf->GetVariableType(varInfo, nullptr));
-				PrintLog(e.what());
-			}
+			Script::ScriptVarType varType = static_cast<Script::ScriptVarType>(m_scriptBuf->GetVariableType(varInfo, nullptr));
 
 			return ScriptToken::Create(varInfo, 0, varType);
 		}
@@ -2661,17 +2649,7 @@ ScriptToken* ExpressionParser::ParseOperand(Operator* curOp)
 	}
 	else if (varInfo)
 	{
-		UInt8 theVarType;
-		try
-		{
-			const auto& consoleVar = GetConsoleVariable(varInfo->name.CStr());
-			theVarType = GetVarType(consoleVar);
-		}
-		catch (std::invalid_argument& e)
-		{
-			theVarType = m_scriptBuf->GetVariableType(varInfo, refVar);
-			PrintLog(e.what());
-		}
+		UInt8 theVarType = m_scriptBuf->GetVariableType(varInfo, refVar);
 		
 		if (bExpectStringVar && theVarType != Script::eVarType_String)
 		{
@@ -2693,43 +2671,6 @@ ScriptToken* ExpressionParser::ParseOperand(Operator* curOp)
 		Message(kError_InvalidDotSyntax);
 		return NULL;
 	}
-
-	try
-	{
-		auto& consoleVar = GetConsoleVariable(token);
-		switch (consoleVar.type) {
-		case kRetnType_Default:
-			{
-				return ScriptToken::Create(consoleVar.value);
-			}
-		case kRetnType_Form:
-			{
-				const auto formId = *reinterpret_cast<UInt32*>(&consoleVar.value);
-				auto* form = LookupFormByID(formId);
-				return ScriptToken::Create(form);
-			}
-		case kRetnType_String:
-			{
-				auto stringVar = std::string(ImprovedConsole::GetStringVar(consoleVar.value));
-				FormatString(stringVar);
-				return ScriptToken::Create(stringVar);
-			}
-		case kRetnType_Array:
-			{
-				const auto arrId = static_cast<ArrayID>(ConsoleArrays::InjectConsoleArray(consoleVar.name));
-				return ScriptToken::CreateArray(arrId);
-			}
-		case kRetnType_ArrayIndex:
-		case kRetnType_Ambiguous:
-		case kRetnType_Max:
-		default: break;
-		}
-	}
-	catch (std::invalid_argument&)
-	{
-	}
-
-	PrintLog("failll");
 
 	// anything else that makes it this far is treated as string
 	if (!curOp || curOp->type != kOpType_MemberAccess) {

@@ -150,10 +150,8 @@
     <ClCompile Include="..\nvse\nvse\ThreadLocal.cpp">
       <Filter>nvse</Filter>
     </ClCompile>
-    <ClCompile Include="console_variables.cpp" />
     <ClCompile Include="declarations.cpp" />
     <ClCompile Include="command_printer.cpp" />
-    <ClCompile Include="console_arrays.cpp" />
     <ClCompile Include="..\nvse\nvse\ArrayVar.cpp">
       <Filter>nvse</Filter>
     </ClCompile>
@@ -162,7 +160,8 @@
       <Filter>internal</Filter>
     </ClCompile>
     <ClCompile Include="autocomplete.cpp" />
-    <ClCompile Include="variable_hooks.cpp" />
+    <ClCompile Include="variables.cpp" />
+    <ClCompile Include="interpreter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nvse\nvse\GameAPI.h">
@@ -235,8 +234,6 @@
     <ClInclude Include="init_patches.h" />
     <ClInclude Include="memscan.h" />
     <ClInclude Include="declarations.h" />
-    <ClInclude Include="console_variables.h" />
-    <ClInclude Include="string_args_hooks.h" />
     <ClInclude Include="..\nvse\nvse\CommandTable.h">
       <Filter>nvse</Filter>
     </ClInclude>
@@ -340,7 +337,6 @@
       <Filter>nvse</Filter>
     </ClInclude>
     <ClInclude Include="command_printer.h" />
-    <ClInclude Include="console_arrays.h" />
     <ClInclude Include="..\nvse\nvse\ArrayVar.h">
       <Filter>nvse</Filter>
     </ClInclude>
@@ -349,7 +345,9 @@
       <Filter>internal</Filter>
     </ClInclude>
     <ClInclude Include="autocomplete.h" />
-    <ClInclude Include="variable_hooks.h" />
+    <ClInclude Include="nvse_hooks.h" />
+    <ClInclude Include="variables.h" />
+    <ClInclude Include="interpreter.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />

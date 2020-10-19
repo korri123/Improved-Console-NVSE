@@ -248,9 +248,9 @@ struct ScriptBuffer
 		Node<tData>	* next;
 	};
 
-	char					*scriptText;		// 000
+	const char				*scriptText;		// 000
 	UInt32					textOffset;			// 004 
-	UInt32					unk008;				// 008
+	UInt32					consoleMode;		// 008
 	String					scriptName;			// 00C
 	UInt32					unk014;				// 014
 	UInt16					unk018;				// 018

@@ -2,9 +2,6 @@
 #include "memscan.h"
 #include <fstream>
 
-
-#include "console_arrays.h"
-#include "console_variables.h"
 #include "ScriptUtils.h"
 
 #include "SafeWrite.h"

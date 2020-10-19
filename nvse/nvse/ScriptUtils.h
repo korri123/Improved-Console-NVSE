@@ -201,6 +201,7 @@ class ExpressionParser
 	void	Message(UInt32 errorCode, ...);
 
 	Token_Type		Parse();
+public:
 	Token_Type		ParseSubExpression(UInt32 exprLen);
 	Operator *		ParseOperator(bool bExpectBinaryOperator, bool bConsumeIfFound = true);
 	ScriptToken	*	ParseOperand(Operator* curOp = NULL);
