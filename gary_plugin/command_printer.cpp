@@ -227,12 +227,10 @@ void PrintResult(CommandInfo* commandInfo, double result)
 
 	if (g_commandPrints != 0)
 	{
-		PrintLog("something already printed, aborting");
 		return;
 	}
 	if (std::isnan(result))
 	{
-		PrintLog("command did not change result value, aborting");
 		return;
 	}
 

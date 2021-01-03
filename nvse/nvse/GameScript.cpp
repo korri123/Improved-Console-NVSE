@@ -4,6 +4,7 @@
 #include "GameObjects.h"
 #include "CommandTable.h"
 #include "GameRTTI.h"
+#include "variables.h"
 #include "internal/utility.h"
 
 UInt32 GetDeclaredVariableType(const char* varName, const char* scriptText)
@@ -93,11 +94,66 @@ ScriptEventList* Script::CreateEventList(void)
 #endif
 }
 
+
+
 Script::RefVariable* ScriptBuffer::ResolveRef(const char* refName)
 {
-	// ###TODO: Handle player, ref vars, quests, globals
-	return NULL;
+	Script::RefVariable* newRef = NULL;
+	auto* listEnd = refVars.Head();
+
+	// see if it's already in the refList
+	for (auto* cur = refVars.Head(); cur; cur = cur->Next())
+	{
+		listEnd = cur;
+		if (cur->data && !_stricmp(cur->data->name.m_data, refName))
+			return cur->data;
+	}
+
+	// not in list
+
+	// is it a local ref variable?
+	VariableInfo* varInfo = GetVariableByName(refName);
+	if (varInfo && GetVariableType(varInfo, NULL) == Script::eVarType_Ref)
+	{
+		newRef = (Script::RefVariable*)FormHeap_Allocate(sizeof(Script::RefVariable));
+		newRef->form = NULL;
+	}
+	else		// is it a form or global?
+	{
+		TESForm* form = GetFormByID(refName);
+		if (form)
+		{
+			TESObjectREFR* refr = DYNAMIC_CAST(form, TESForm, TESObjectREFR);
+			if (refr && !refr->IsPersistent())		// only persistent refs can be used in scripts
+				return NULL;
+
+			newRef = (Script::RefVariable*)FormHeap_Allocate(sizeof(Script::RefVariable));
+			memset(newRef, 0, sizeof(Script::RefVariable));
+			newRef->form = form;
+		}
+	}
+
+	if (newRef)		// got it, add to refList
+	{
+		newRef->name.Set(refName);
+		newRef->varIdx = 0;
+		if (!refVars.Head()->data)
+			refVars.Head()->data = newRef;
+		else
+		{
+			auto* entry = (tList<Script::RefVariable>::Node*)FormHeap_Allocate(sizeof(tList<Script::RefVariable>::Node));
+			entry->data = newRef;
+			entry->next = NULL;
+			listEnd->next = entry;
+		}
+
+		numRefs++;
+		return newRef;
+	}
+	else
+		return NULL;
 }
+
 
 bool Script::RunScriptLine2(const char * text, TESObjectREFR* object, bool bSuppressOutput)
 {
@@ -125,63 +181,6 @@ bool Script::RunScriptLine(const char * text, TESObjectREFR * object)
 
 #else		// CS-stuff below
 
-Script::RefVariable* ScriptBuffer::ResolveRef(const char* refName)
-{
-	Script::RefVariable* newRef = NULL;
-	Script::RefListEntry* listEnd = &refVars;
-
-	// see if it's already in the refList
-	for (Script::RefListEntry* cur = &refVars; cur; cur = cur->next)
-	{
-		listEnd = cur;
-		if (cur->var && !_stricmp(cur->var->name.m_data, refName))
-			return cur->var;
-	}
-
-	// not in list
-
-	// is it a local ref variable?
-	VariableInfo* varInfo = vars.GetVariableByName(refName);
-	if (varInfo && GetVariableType(varInfo, NULL) == Script::eVarType_Ref)
-	{
-		newRef = (Script::RefVariable*)FormHeap_Allocate(sizeof(Script::RefVariable));
-		newRef->form = NULL;
-	}
-	else		// is it a form or global?
-	{
-		TESForm* form = GetFormByID(refName);
-		if (form)
-		{
-			TESObjectREFR* refr = DYNAMIC_CAST(form, TESForm, TESObjectREFR);
-			if (refr && !refr->IsPersistent())		// only persistent refs can be used in scripts
-				return NULL;
-
-			newRef = (Script::RefVariable*)FormHeap_Allocate(sizeof(Script::RefVariable));
-			memset(newRef, 0, sizeof(Script::RefVariable));
-			newRef->form = form;
-		}
-	}
-
-	if (newRef)		// got it, add to refList
-	{
-		newRef->name.Set(refName);
-		newRef->varIdx = 0;
-		if (!refVars.var)
-			refVars.var = newRef;
-		else
-		{
-			Script::RefListEntry* entry = (Script::RefListEntry*)FormHeap_Allocate(sizeof(Script::RefListEntry));
-			entry->var = newRef;
-			entry->next = NULL;
-			listEnd->next = entry;
-		}
-
-		numRefs++;
-		return newRef;
-	}
-	else
-		return NULL;
-}
 
 #endif
 

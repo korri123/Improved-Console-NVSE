@@ -162,6 +162,7 @@
     <ClCompile Include="autocomplete.cpp" />
     <ClCompile Include="variables.cpp" />
     <ClCompile Include="interpreter.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nvse\nvse\GameAPI.h">
@@ -348,6 +349,7 @@
     <ClInclude Include="nvse_hooks.h" />
     <ClInclude Include="variables.h" />
     <ClInclude Include="interpreter.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />

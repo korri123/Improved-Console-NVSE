@@ -2897,7 +2897,7 @@ ExpressionEvaluator::ExpressionEvaluator(COMMAND_ARGS) : m_opcodeOffsetPtr(opcod
 
 	m_flags.Clear();
 
-	PushOnStack();
+	//PushOnStack();
 }
 
 ExpressionEvaluator::~ExpressionEvaluator()

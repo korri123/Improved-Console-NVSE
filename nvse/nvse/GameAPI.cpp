@@ -15,6 +15,8 @@
 static NVSEStringVarInterface* s_StringVarInterface = NULL;
 bool extraTraces = false;
 
+const _GetFormByID GetFormByID = (_GetFormByID)(0x483A00);
+
 // arg1 = 1, ignored if canCreateNew is false, passed to 'init' function if a new object is created
 typedef void * (* _GetSingleton)(bool canCreateNew);
 

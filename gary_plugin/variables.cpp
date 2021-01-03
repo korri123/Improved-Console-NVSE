@@ -2,6 +2,7 @@
 #include "GameScript.h"
 #include "declarations.h"
 #include "SafeWrite.h"
+#include "variables.h"
 
 Script::VarInfoList g_varList;
 Script::RefVarList g_refVars;
@@ -80,29 +81,37 @@ __declspec(naked) void ScriptCompileHook()
 	}
 }
 
-ScriptEventList* g_scriptEventList = nullptr;
+bool g_createdEventList = false;
 
 void __fastcall PreScriptExecute(Script* script, ScriptEventList** eventList)
 {
 	if (*eventList)
+	{
 		// If a ref with a script attached is selected it uses that event list
+		g_createdEventList = false;
 		return;
+	}
+		
 	*eventList = script->CreateEventList();
+	g_createdEventList = true;
 }
 
 void __fastcall PostScriptExecute(ScriptEventList* eventList)
 {
+	if (!g_createdEventList)
+		return;
+	// save new values after script has executed
 	auto* eventListVarIter = eventList->m_vars->Head();
 	auto* cachedVarIter = g_varList.Head();
 	
 	while (eventListVarIter && cachedVarIter)
 	{
-		if (!eventListVarIter->Data() || !cachedVarIter->Data())
-			continue;
-		
-		// save new values after script has executed
-		cachedVarIter->Data()->data = eventListVarIter->Data()->data;
-		eventListVarIter = eventListVarIter->Next(); cachedVarIter = cachedVarIter->Next();
+		if (eventListVarIter->Data() && cachedVarIter->Data())
+		{
+			cachedVarIter->Data()->data = eventListVarIter->Data()->data;
+		}
+		eventListVarIter = eventListVarIter->Next();
+		cachedVarIter = cachedVarIter->Next();
 	}
 	GameHeapFree(eventList);
 }
@@ -138,7 +147,7 @@ void __fastcall AddVariableDeclarations(ScriptBuffer* buffer, UInt32 cmdParse)
 
 	g_lastScriptTextData = buffer->scriptText;
 	if (cmdParse == s_defaultParseAddress)
-		// not default parser, must be NVSE
+		// default parser, can't be NVSE
 		return;
 	buffer->scriptText = g_variableDeclarations.c_str();
 }

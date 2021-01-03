@@ -97,6 +97,9 @@ extern const _ShowCompilerError		ShowCompilerError;
 
 #endif
 
+typedef TESForm* (__cdecl* _GetFormByID)(const char* editorID);
+extern const _GetFormByID GetFormByID;
+
 struct NVSEStringVarInterface;
 	// Problem: plugins may want to use %z specifier in format strings, but don't have access to StringVarMap
 	// Could change params to ExtractFormatStringArgs to include an NVSEStringVarInterface* but

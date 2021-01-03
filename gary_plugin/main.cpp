@@ -7,6 +7,7 @@
 #include "nvse_hooks.h"
 #include "declarations.h"
 #include "interpreter.h"
+#include "utils.h"
 #include "variables.h"
 
 using namespace ImprovedConsole;
@@ -33,7 +34,7 @@ void MessageHandler(NVSEMessagingInterface::Message* msg)
 		}
 		else
 		{
-			PrintLog("jip is nullptr");
+			PrintLog("JIP LN not loaded, scrolling in console will not work");
 		}
 	}
 	else if (msg->type == NVSEMessagingInterface::kMessage_PostLoadGame)
@@ -89,12 +90,16 @@ bool NVSEPlugin_Query(const NVSEInterface *nvse, PluginInfo *info)
 		return false;
 	}
 	auto s_nvseVersion = (nvse->nvseVersion >> 24) + (((nvse->nvseVersion >> 16) & 0xFF) * 0.1) + (((nvse->nvseVersion & 0xFF) >> 4) * 0.01);
-	if (nvse->nvseVersion < 0x5010040)
+	if (nvse->nvseVersion < 0x5030040)
 	{
-		PrintLog("ERROR: NVSE version is outdated (v%.2f). This plugin requires v5.14 minimum.", s_nvseVersion);
+		const auto* msg = "IMPROVED CONSOLE: NVSE version is outdated (v%.2f). This plugin requires v5.34 minimum. Download newest xNVSE from www.github.com/xNVSE/NVSE";
+		char buffer[512];
+		snprintf(buffer, sizeof(buffer), msg, s_nvseVersion);
+		PrintLog(buffer);
+		ShowErrorMessageBox(buffer);
 		return false;
 	}
-	PrintLog("Improved Console Initialized");
+	PrintLog("Improved Console initialized");
 	return true;
 }
 
