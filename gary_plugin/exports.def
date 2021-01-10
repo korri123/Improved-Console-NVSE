@@ -1,4 +1,4 @@
-LIBRARY	"gary_plugin"
+LIBRARY	"improved_console"
 EXPORTS
 NVSEPlugin_Query
 NVSEPlugin_Load

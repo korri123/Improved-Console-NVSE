@@ -17,11 +17,11 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "A component of the New Vegas Script Extender"
+            VALUE "FileDescription", "A component of xNVSE"
 			VALUE "FileVersion", NVSE_VERSION_VERSTRING
-            VALUE "InternalName", "NVSE"
+            VALUE "InternalName", "Improved Console"
             VALUE "LegalCopyright", "Copyright (C) 2006-2011"
-            VALUE "ProductName", "NVSE"
+            VALUE "ProductName", "Improved Console"
 			VALUE "ProductVersion", NVSE_VERSION_VERSTRING
         END
     END

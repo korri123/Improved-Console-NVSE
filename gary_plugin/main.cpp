@@ -16,30 +16,9 @@ using namespace ImprovedConsole;
 
 void MessageHandler(NVSEMessagingInterface::Message* msg)
 {
-	if (msg->type == NVSEMessagingInterface::kMessage_PostLoad)
+	if (msg->type == NVSEMessagingInterface::kMessage_MainGameLoop)
 	{
-		auto* const jip = GetModuleHandle("jip_nvse.dll");
-		if (jip != nullptr)
-		{
-			const auto JIPMainLoopAddCallback = reinterpret_cast<void(*)(void*, void*, UInt32, UInt32)>(GetProcAddress(jip, "MainLoopAddCallbackEx"));
-			if (JIPMainLoopAddCallback != nullptr)
-			{
-				PrintLog("Registered JIP callback");
-				JIPMainLoopAddCallback(static_cast<void*>(CheckForScrollWheelCallback), nullptr, 0, 1);
-			}
-			else
-			{
-				PrintLog("Could not register JIP callback");
-			}
-		}
-		else
-		{
-			PrintLog("JIP LN not loaded, scrolling in console will not work");
-		}
-	}
-	else if (msg->type == NVSEMessagingInterface::kMessage_PostLoadGame)
-	{
-		Autocomplete::Initialize();
+		CheckForScrollWheelCallback();
 	}
 }
 
@@ -90,15 +69,17 @@ bool NVSEPlugin_Query(const NVSEInterface *nvse, PluginInfo *info)
 		return false;
 	}
 	auto s_nvseVersion = (nvse->nvseVersion >> 24) + (((nvse->nvseVersion >> 16) & 0xFF) * 0.1) + (((nvse->nvseVersion & 0xFF) >> 4) * 0.01);
-	if (nvse->nvseVersion < 0x5030040)
+	if (nvse->nvseVersion < 0x6000000)
 	{
-		const auto* msg = "IMPROVED CONSOLE: NVSE version is outdated (v%.2f). This plugin requires v5.34 minimum. Download newest xNVSE from www.github.com/xNVSE/NVSE";
+		const auto* msg = "IMPROVED CONSOLE: NVSE version is outdated (v%.2f). This plugin requires v6 minimum. Download newest xNVSE from www.github.com/xNVSE/NVSE";
 		char buffer[512];
 		snprintf(buffer, sizeof(buffer), msg, s_nvseVersion);
 		PrintLog(buffer);
 		ShowErrorMessageBox(buffer);
 		return false;
 	}
+	if (nvse->isEditor)
+		return false;
 	PrintLog("Improved Console initialized");
 	return true;
 }
@@ -106,7 +87,7 @@ bool NVSEPlugin_Query(const NVSEInterface *nvse, PluginInfo *info)
 bool NVSEPlugin_Load(const NVSEInterface *nvse)
 {
 	
-	PatchRemoteDesktop();
+	// PatchRemoteDesktop();
 	//if (!PatchNVSE()) return false;
 
 	InitInterfaces(nvse);
