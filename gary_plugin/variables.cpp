@@ -50,10 +50,8 @@ void __fastcall PreScriptCompile(ScriptBuffer* scriptBuffer, Script* script)
 	Game::CopyVarList(&g_varList, &scriptBuffer->vars);
 	Game::CopyRefList(&g_refVars, &scriptBuffer->refVars);
 
-	script->info.varCount = g_varCount;
-	script->info.numRefs = g_numRefs;
-	scriptBuffer->varCount = g_varCount;
-	scriptBuffer->numRefs = g_numRefs;
+	scriptBuffer->varCount = scriptBuffer->vars.Count();
+	scriptBuffer->numRefs = scriptBuffer->refVars.Count();
 }
 
 __declspec(naked) void ScriptCompileHook()
