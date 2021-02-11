@@ -163,6 +163,7 @@
     <ClCompile Include="variables.cpp" />
     <ClCompile Include="interpreter.cpp" />
     <ClCompile Include="utils.cpp" />
+    <ClCompile Include="nvse_hooks.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nvse\nvse\GameAPI.h">

@@ -3,6 +3,7 @@
 #include "declarations.h"
 #include "SafeWrite.h"
 #include "variables.h"
+#include "nvse_hooks.h"
 
 Script::VarInfoList g_varList;
 Script::RefVarList g_refVars;
@@ -26,22 +27,24 @@ VariableInfo* GetVariableByName(const std::string& name)
 
 void __fastcall PostScriptCompile(ScriptBuffer* scriptBuffer)
 {
-	if (g_varCount == scriptBuffer->varCount)
-		return;
-	// clear our var lists
-	g_varList.RemoveAll();
-	g_refVars.RemoveAll();
+	if (g_varCount != scriptBuffer->varCount)
+	{
+		// clear our var lists
+		g_varList.RemoveAll();
+		g_refVars.RemoveAll();
 
-	// copy variables from newly compiled script buf to our lists
-	Game::CopyVarList(&scriptBuffer->vars, &g_varList);
-	Game::CopyRefList(&scriptBuffer->refVars, &g_refVars);
-		
-	// new variable
-	g_variableDeclarations += scriptBuffer->scriptText;
-	g_variableDeclarations += "\r\n";
+		// copy variables from newly compiled script buf to our lists
+		Game::CopyVarList(&scriptBuffer->vars, &g_varList);
+		Game::CopyRefList(&scriptBuffer->refVars, &g_refVars);
 
-	g_varCount = scriptBuffer->varCount;
-	g_numRefs = scriptBuffer->numRefs;
+		// new variable
+		g_variableDeclarations += scriptBuffer->scriptText;
+		g_variableDeclarations += "\r\n";
+
+		g_varCount = scriptBuffer->varCount;
+		g_numRefs = scriptBuffer->numRefs;
+	}
+	g_rigIsAlpha = false;
 }
 
 void __fastcall PreScriptCompile(ScriptBuffer* scriptBuffer, Script* script)
@@ -52,6 +55,8 @@ void __fastcall PreScriptCompile(ScriptBuffer* scriptBuffer, Script* script)
 
 	scriptBuffer->varCount = scriptBuffer->vars.Count();
 	scriptBuffer->numRefs = scriptBuffer->refVars.Count();
+
+	g_rigIsAlpha = true;
 }
 
 __declspec(naked) void ScriptCompileHook()

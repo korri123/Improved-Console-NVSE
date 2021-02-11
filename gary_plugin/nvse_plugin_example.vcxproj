@@ -271,6 +271,7 @@
     <ClCompile Include="interpreter.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="memscan.cpp" />
+    <ClCompile Include="nvse_hooks.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="variables.cpp" />
   </ItemGroup>
