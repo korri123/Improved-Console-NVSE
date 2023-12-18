@@ -4299,6 +4299,10 @@ STATIC_ASSERT(sizeof(TESObjectLAND) == 0x2C);
 
 struct VariableInfo
 {
+	~VariableInfo()
+	{
+		name.Set(nullptr);
+	}
 	UInt32			idx;		// 00
 	UInt32			pad04;		// 04
 	double			data;		// 08

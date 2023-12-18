@@ -31,6 +31,10 @@ public:
 
 	struct RefVariable
 	{
+		~RefVariable()
+		{
+			name.Set(nullptr);
+		}
 		String		name;		// 00 variable name/editorID (not used at run-time)
 		TESForm		*form;		// 08
 		UInt32		varIdx;		// 0C always zero in editor
@@ -267,7 +271,7 @@ struct ScriptBuffer
 	UInt8					unk03A[2];
 	Script::VarInfoList		vars;				// 03C
 	Script::RefVarList		refVars;			// 044 probably ref vars
-	UInt32					unk04C;				// 04C num lines?
+	Script* currentScript;				// 04C num lines?
 	Node<ScriptLineBuffer>	lines;				// 050
 	// nothing else initialized
 

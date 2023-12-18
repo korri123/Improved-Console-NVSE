@@ -1,12 +1,12 @@
 #include "main.h"
 
-#include "autocomplete.h"
 #include "init_patches.h"
 #include "command_printer.h"
 #include "console_scroll.h"
 #include "nvse_hooks.h"
 #include "declarations.h"
 #include "interpreter.h"
+#include "SimpleINI.h"
 #include "utils.h"
 #include "variables.h"
 
@@ -14,11 +14,23 @@ using namespace ImprovedConsole;
 
 #define REG_CMD(name) nvse->RegisterCommand(&kCommandInfo_##name);
 
+bool g_scrollWheelSupport;
+
+
+
 void MessageHandler(NVSEMessagingInterface::Message* msg)
 {
-	if (msg->type == NVSEMessagingInterface::kMessage_MainGameLoop)
+	if (msg->type == NVSEMessagingInterface::kMessage_MainGameLoop && g_scrollWheelSupport)
 	{
 		CheckForScrollWheelCallback();
+	}
+	else if (msg->type == NVSEMessagingInterface::kMessage_Precompile)
+	{
+		PreScriptCompile(static_cast<ScriptAndScriptBuffer*>(msg->data));
+	}
+	else if (msg->type == NVSEMessagingInterface::kMessage_ScriptCompile)
+	{
+		PostScriptCompile(static_cast<ScriptAndScriptBuffer*>(msg->data));
 	}
 }
 
@@ -54,8 +66,6 @@ void InitInterfaces(const NVSEInterface *nvse)
 	msgInterface->RegisterListener(nvse->GetPluginHandle(), "NVSE", MessageHandler);
 }
 
-
-
 bool NVSEPlugin_Query(const NVSEInterface *nvse, PluginInfo *info)
 {
 	info->infoVersion = PluginInfo::kInfoVersion;
@@ -69,9 +79,9 @@ bool NVSEPlugin_Query(const NVSEInterface *nvse, PluginInfo *info)
 		return false;
 	}
 	auto s_nvseVersion = (nvse->nvseVersion >> 24) + (((nvse->nvseVersion >> 16) & 0xFF) * 0.1) + (((nvse->nvseVersion & 0xFF) >> 4) * 0.01);
-	if (nvse->nvseVersion < 0x6000000)
+	if (nvse->nvseVersion < PACKED_NVSE_VERSION)
 	{
-		const auto* msg = "IMPROVED CONSOLE: NVSE version is outdated (v%.2f). This plugin requires v6 minimum. Download newest xNVSE from www.github.com/xNVSE/NVSE";
+		const auto* msg = "IMPROVED CONSOLE: NVSE version is outdated (v%.2f). This plugin requires v6.2.3 minimum. Download newest xNVSE from www.github.com/xNVSE/NVSE";
 		char buffer[512];
 		snprintf(buffer, sizeof(buffer), msg, s_nvseVersion);
 		PrintLog(buffer);
@@ -80,13 +90,23 @@ bool NVSEPlugin_Query(const NVSEInterface *nvse, PluginInfo *info)
 	}
 	if (nvse->isEditor)
 		return false;
+
 	PrintLog("Improved Console initialized");
 	return true;
 }
 
 bool NVSEPlugin_Load(const NVSEInterface *nvse)
 {
-	
+	const auto iniPath = GetCurPath() + R"(\Data\NVSE\Plugins\improved_console.ini)";
+
+	CSimpleIniA ini;
+	ini.SetUnicode();
+	const auto errVal = ini.LoadFile(iniPath.c_str());
+
+	g_scrollWheelSupport = ini.GetOrCreate("General", "bConsoleScrollWheelSupport", 1, "; Enable console scroll wheel support");
+
+	ini.SaveFile(iniPath.c_str(), false);
+
 	// PatchRemoteDesktop();
 	//if (!PatchNVSE()) return false;
 
@@ -104,6 +124,8 @@ bool NVSEPlugin_Load(const NVSEInterface *nvse)
 	//InitStewie(nvse);
 	//PatchStupidBug();
 	//PatchMCM();
+
+	
 	
 	return true;
 }

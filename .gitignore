@@ -369,3 +369,7 @@ gary_plugin/Release
 *.obj
 *.dll
 *.obj
+*.lib
+*.tlog
+
+common/Release\ VC9

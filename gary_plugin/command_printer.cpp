@@ -6,6 +6,8 @@
 #include "SafeWrite.h"
 #include <cmath>
 
+#include "variables.h"
+
 using namespace ImprovedConsole;
 
 double g_lastResultValue = 0.0;
@@ -90,8 +92,8 @@ void PrintArray(NVSEArrayVar* arrayPtr)
 	std::vector<NVSEArrayVarInterface::Element> values(size);
 	GetElements(arrayPtr, values.data(), keys.data());
 	for (int i = 0; i < size; i++) {
-		NVSEArrayVarInterface::Element key = keys[i];
-		NVSEArrayVarInterface::Element value = values[i];
+		NVSEArrayVarInterface::Element& key = keys[i];
+		NVSEArrayVarInterface::Element& value = values[i];
 
 		auto keyStr = FormatElement(&key);
 		auto valStr = FormatElement(&value);
@@ -216,6 +218,8 @@ void PrintElement(NVSEArrayElement& element)
 	}
 }
 
+
+
 void PrintResult(CommandInfo* commandInfo, double result)
 {
 	auto returnType = static_cast<CommandReturnType>(GetCmdReturnType(commandInfo));
@@ -229,7 +233,7 @@ void PrintResult(CommandInfo* commandInfo, double result)
 	{
 		return;
 	}
-	if (std::isnan(result))
+	if (result == std::numeric_limits<double>::infinity())
 	{
 		return;
 	}
@@ -246,6 +250,8 @@ void PrintResult(CommandInfo* commandInfo, double result)
 
 void __stdcall PrintCommandResult(double commandResult, ScriptRunner* scriptRunner, CommandInfo* commandInfo)
 {
+	if (!g_isInConsole)
+		return;
 	if (commandInfo)
 		PrintResult(commandInfo, commandResult);
 }
@@ -262,9 +268,6 @@ __declspec(naked) void PrintCommandResultHook()
 		test al, al
 		jz returnToFunction
 		push eax // save return value
-		call IsConsoleMode
-		test al, al
-		jz returnToFunction
 		
 		mov ecx, [ebp - 0x30] // CommandInfo*
 		push ecx
@@ -298,8 +301,8 @@ void __stdcall PreCommandCall(double* commandResult)
 	// reset command prints so that when this gets incremented in hook we know that the function printed something
 	g_commandPrints = 0;
 
-	// set *result to NaN to compare with later so that we know if it got modified in the command or not
-	*commandResult = std::numeric_limits<double>::quiet_NaN();
+	// set *result to infinity to compare with later so that we know if it got modified in the command or not
+	*commandResult = std::numeric_limits<double>::infinity();
 }
 
 __declspec(naked) void PreCommandCallHook()

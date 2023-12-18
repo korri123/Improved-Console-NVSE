@@ -13,6 +13,6 @@
 #include "nvse/SafeWrite.h"
 #include "internal/decoding.h"
 
-#define IMPROVED_CONSOLE_PLUGIN_VERSION 1
+#define IMPROVED_CONSOLE_PLUGIN_VERSION 3
 
 IDebugLog gLog;

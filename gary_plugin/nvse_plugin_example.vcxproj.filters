@@ -159,7 +159,6 @@
     <ClCompile Include="internal\dinput.cpp">
       <Filter>internal</Filter>
     </ClCompile>
-    <ClCompile Include="autocomplete.cpp" />
     <ClCompile Include="variables.cpp" />
     <ClCompile Include="interpreter.cpp" />
     <ClCompile Include="utils.cpp" />
@@ -346,11 +345,11 @@
     <ClInclude Include="internal\dinput.h">
       <Filter>internal</Filter>
     </ClInclude>
-    <ClInclude Include="autocomplete.h" />
     <ClInclude Include="nvse_hooks.h" />
     <ClInclude Include="variables.h" />
     <ClInclude Include="interpreter.h" />
     <ClInclude Include="utils.h" />
+    <ClInclude Include="SimpleINI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />
