@@ -1547,9 +1547,10 @@ void ExpressionEvaluator::Error(const char* fmt, ...)
 
 	// include mod filename, save having to ask users to figure it out themselves
 	const char* modName = "Savegame";
-	if (script->GetModIndex() != 0xFF)
+	const ModInfo* mod = script->mods.GetLastItem();
+	if (mod)
 	{
-		modName = DataHandler::Get()->GetNthModName(script->GetModIndex());
+		modName = mod->name;
 		if (!modName || !modName[0])
 			modName = "Unknown";
 	}

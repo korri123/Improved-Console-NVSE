@@ -58,9 +58,9 @@ UInt8 DataHandler::GetModIndex(const char *modName)
 
 const char* DataHandler::GetNthModName(UInt32 modIndex)
 {
-	const ModInfo** activeModList = GetActiveModList();
-	if (modIndex < GetActiveModCount() && activeModList[modIndex])
-		return activeModList[modIndex]->name;
+	const ModInfo* activeModList = ThisStdCall<ModInfo*>(0x465010, this, modIndex);
+	if (activeModList)
+		return activeModList->name;
 	else
 		return "";
 }
